@@ -31,7 +31,11 @@ class BeerController extends Controller
             ->toArray();
        })->toArray();
 
-        Excel::store(new BeerExport( $filteredBeers), 'beer_report.xlsx');
+        Excel::store(
+            new BeerExport( $filteredBeers),
+            'beer_report.xlsx',
+            's3'
+        );
 
         return 'relatorio criad';
     }
