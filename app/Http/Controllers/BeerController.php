@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\BeerRequest;
+use App\Services\PunkApiService;
 
 class BeerController extends Controller
 {
-    public function index()
+    public function index(BeerRequest $request, PunkApiService $service)
     {
-        return 'Appcoder index';
+        return $service->getBeers(...$request->validated());
     }
 }
