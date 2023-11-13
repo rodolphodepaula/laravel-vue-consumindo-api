@@ -4,7 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Exports\BeerExport;
 use App\Http\Requests\BeerRequest;
+use App\Jobs\ExportJob;
+use App\Jobs\SendExportEmailJob;
+use App\Jobs\StoreExportDataJob;
+use App\Mail\ExportEmail;
+use App\Models\Export;
 use App\Services\PunkApiService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 
 class BeerController extends Controller
@@ -20,23 +27,16 @@ class BeerController extends Controller
         return $this->service->getBeers(...$request->validated());
     }
 
-    public function export(BeerRequest $request)
+    public function export(BeerRequest $request, PunkapiService $service)
     {
+        $filename = "cervejas-encontradas-" . now()->format('Y-m-d - H_i') . ".xlsx";
 
-       $beers = $this->service->getBeers(...$request->validated());
+        ExportJob::withChain([
+            new SendExportEmailJob($filename),
+            new StoreExportDataJob(auth()->user(), $filename)
+        ])->dispatch($request->validated(), $filename);
 
-       $filteredBeers = collect($beers)->map(function($value, $key) {
-        return collect($value)
-            ->only(['name', 'tagline', 'first_brewed', 'description'])
-            ->toArray();
-       })->toArray();
-
-        Excel::store(
-            new BeerExport( $filteredBeers),
-            'beer_report.xlsx',
-            's3'
-        );
-
-        return 'relatorio criad';
+        return redirect()->back()
+            ->with('success', 'Seu arquivo foi enviado para processamento e em breve estará em seu email');
     }
 }

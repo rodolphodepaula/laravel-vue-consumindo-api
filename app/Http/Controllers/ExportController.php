@@ -3,63 +3,38 @@
 namespace App\Http\Controllers;
 
 use App\Models\Export;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class ExportController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
-        //
+        $exports = Export::paginate(5);
+
+        return Inertia::render('Reports', [
+            'exports' => $exports
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+    public function show($export) {
+        $export = Export::find($export);
+
+        return Storage::download($export->file_name);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function destroy($export)
     {
-        //
-    }
+        $export = Export::find($export);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Export $export)
-    {
-        //
-    }
+        if ($export) {
+            Storage::delete($export->file_name);
+            $export->delete();
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Export $export)
-    {
-        //
-    }
+        return redirect()->back()
+            ->with('success', 'Seu arquivo foi removido com sucesso');
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Export $export)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Export $export)
-    {
-        //
     }
 }
