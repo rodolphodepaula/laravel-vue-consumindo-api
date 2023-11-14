@@ -9,9 +9,11 @@ use App\Jobs\SendExportEmailJob;
 use App\Jobs\StoreExportDataJob;
 use App\Mail\ExportEmail;
 use App\Models\Export;
+use App\Models\Meal;
 use App\Services\PunkApiService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
 class BeerController extends Controller
@@ -24,7 +26,14 @@ class BeerController extends Controller
 
     public function index(BeerRequest $request)
     {
-        return $this->service->getBeers(...$request->validated());
+        $filters = $request->validated();
+        $beers = $this->service->getBeers(...$filters);
+        $meals = Meal::all();
+        return Inertia::render('Beers', [
+            'beers' => $beers,
+            'meals' => $meals,
+            'filters' => $filters
+        ]);
     }
 
     public function export(BeerRequest $request, PunkapiService $service)

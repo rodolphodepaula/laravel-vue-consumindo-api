@@ -47,6 +47,6 @@ Route::group([
 
     Route::get('/export', [BeerController::class, 'export'])->name('beers.export');
 
-    Route::resource("reports", ExportController::class)
+    Route::resource("/reports", ExportController::class)
         ->only(["index", "show", "destroy"]);
 });
